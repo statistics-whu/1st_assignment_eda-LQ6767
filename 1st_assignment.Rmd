@@ -89,9 +89,25 @@ summary(lj)
 可以看到：
 
 - 直观结论1
-
+中北路房子的平均房价最高，阳逻房子的平均房价最低。
+```{r}
+#分析各区域的房产均价
+junjia <- lj %>%
+  group_by(property_region) %>%
+  summarise(avg_price_sqm = mean(price_sqm, na.rm = TRUE)) %>%
+  arrange(desc(avg_price_sqm))
+print(junjia)
+```
 - 直观结论2
-
+汉口北房子的平均面积最高，古田房子的平均面积最小。
+```{r}
+#分析各区域的房产均价
+mianji <- lj %>%
+  group_by(property_region) %>%
+  summarise(avg_building_area = mean(building_area, na.rm = TRUE)) %>%
+  arrange(desc(avg_building_area))
+print(mianji)
+```
 - ...
 
 # 探索性分析
