@@ -89,33 +89,49 @@ summary(lj)
 可以看到：
 
 - 直观结论1
-中北路房子的平均每平米房价最高，阳逻房子的平均每平米房价最低。
+  数据共包含3000行数据，包含小区名称、小区位置、房产总价、房子每平方单价等18个变量。
+
+- 直观结论2
+  武汉二手房单价均值为15148，中位数为14404，最高价为44656；
+  武汉二手房总价均值为155.9万，中位数为137.0万，最高价为1380.0万；
+
+
+# 探索性分析
+
+#1、分析各区域的房产均价
 ```{r}
-#分析各区域的房产均价
 junjia <- lj %>%
   group_by(property_region) %>%
   summarise(avg_price_sqm = mean(price_sqm, na.rm = TRUE)) %>%
   arrange(desc(avg_price_sqm))
 print(junjia)
 ```
-- 直观结论2
-汉口北房子的平均面积最大，古田房子的平均面积最小。
+发现：
+
+-中北路房子的平均每平米房价最高。
+-阳逻房子的平均每平米房价最低。
+
+
+#2、分析各区域的房产房产平均面积
 ```{r}
-#分析各区域的房产房产平均面积
 mianji <- lj %>%
   group_by(property_region) %>%
   summarise(avg_building_area = mean(building_area, na.rm = TRUE)) %>%
   arrange(desc(avg_building_area))
 print(mianji)
 ```
-- ...
+发现：
 
-# 探索性分析
-##1、每平米房价分析
+-汉口北房子的平均面积最大.
+
+-古田房子的平均面积最小。
+
+
+##3、每平米房价分析
 ```{r}
 install.packages("ggplot2") 
 library(ggplot2)
-ggplot(df, aes(x = price_sqm)) +
+ggplot(lj, aes(x = price_sqm)) +
   geom_histogram(binwidth = 60, fill = "blue", ) +
   labs(title = "每平米房价直方图", x = "每平米房价", y = "房源数量")
 ```
@@ -125,8 +141,8 @@ ggplot(df, aes(x = price_sqm)) +
 
 - 大部分的房价集中在较低的区间，随着价格的增加，房源数量逐渐减少。这种分布可能表明市场上大多数房产的价格相对较低，而高价位的房产数量相对较少。
 
-## 变量2的数值描述与图形
-##1、房产总价与房产总面积直接的关系
+
+##4、房产总价与房产总面积直接的关系
 ```{r}
 ggplot(lj, aes(x=building_area, y=price_ttl)) +
   geom_point(color="blue",size=0.2) +geom_smooth(mapping=aes(x=building_area, y=price_ttl))+##散点图+回归线
@@ -141,41 +157,90 @@ ggplot(lj, aes(x=building_area, y=price_ttl)) +
 
 ## 变量...的数值描述与图形
 
+
+
+## 探索问题1、卧室数量与起居室数量（几室几厅）与房产平均单价之间的关系？
+
+```{r}
+卧室数量与起居室数量（几室几厅）与房产平均单价直方图
+lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
+
+# 统计每种组合的平均单价
+combination_price_sqm <- lj %>%
+  group_by(combination) %>%
+  summarise(average_price_sqm = mean(price_sqm, na.rm = TRUE))
+
+# 绘制直方图
+ggplot(combination_price_sqm, aes(x = combination, y = average_price_sqm, fill = average_price_sqm)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "几室几厅与平均单价", 
+       x = "几室几厅", 
+       y = "平均单价")
+```
+```{r}
+卧室数量与起居室数量（几室几厅）与房产单价散点图与回归线
+lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
+
+# 绘制散点图和回归线
+ggplot(lj, aes(x=combination, y=price_sqm)) +
+  geom_point(color="blue",size=0.1) +geom_smooth(mapping=aes(x=combination, y=price_sqm))+##散点图+回归线
+   labs(title="几室几厅与单价", x="几室几厅", y="单价")
+```
 发现：
 
-- 发现1
+- 从直方图可以看出，不同户型组合的平均单价有显著差异。其中五室一厅户型的平均单价最高，而四室三厅户型的平均单价最低。这表明在市场上，五室一厅户型更昂贵或更稀缺，因此单价更高。
 
-- 发现2
+- 从散点可以看出，不同户型组合的单价分布范围很广。其中三室两厅户型的单价分布最为集中，而其他户型三室三厅及以上的单价分布则较为分散。这表明在市场上，某些特定户型的单价可能更加标准化或统一，而其他户型的单价则可能因位置、条件或其他因素而有较大差异。
 
-## 探索问题1
 
+## 探索问题2、卧室数量与起居室数量（几室几厅）哪种组合更受关注？
+```{r}
+几室几厅与关注度总和的关系
+
+lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
+
+# 统计每种组合的关注度
+combination_followers <- lj %>%
+  group_by(combination) %>%
+  summarise(sum_followers = sum(followers, na.rm = TRUE))
+
+# 绘制直方图
+ggplot(combination_followers, aes(x = combination, y = sum_followers, fill = sum_followers)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "几室几厅的关注度总和直方图", 
+       x = "几室几厅", 
+       y = "关注度总和")
+```
+```{r}
+几室几厅与平均关注度的关系
+
+lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
+
+# 统计每种组合的关注度
+combination_followers <- lj %>%
+  group_by(combination) %>%
+  summarise(average_followers = mean(followers, na.rm = TRUE))
+
+# 绘制直方图
+ggplot(combination_followers, aes(x = combination, y = average_followers, fill = average_followers)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "几室几厅的关注度直方图", 
+       x = "几室几厅", 
+       y = "平均关注度")
+```
 发现：
 
-- 发现1
+- 不同户型的关注度有显著差异。例如，七室三厅户型的平均关注度最高，超过了30，而四室一厅户型的关注度最低。这表明在市场上，七室三厅户型可能更受欢迎或更稀缺，因此吸引了更多的关注。
 
-- 发现2
-
-## 探索问题2
-
-发现：
-
-- 发现1
-
-- 发现2
-
-## 探索问题3
-
-发现：
-
-- 发现1
-
-- 发现2
+- 三室两厅户型的关注度总和最高，接近8000，而其他户型的关注度总和相对较低。这表明在市场上，三室两厅户型可能更受欢迎或更常见，因此吸引了更多的关注。
 
 ---
 
 # 发现总结
 
 用1-3段话总结你的发现。
-
+1、三室两厅户型的单价分布最为集中，且三室两厅户型的关注度总和最高，说明三室两厅为市面上的主流户型，价格也相对统一。
+2、大部分买房者会选择三室两厅等主流户型，说明了三室两厅的性价比较高，其拥有适中的卧室数量和客厅数量，能满足正常的居住需求且价格偏差小，合适的面积也保证了总价不会太高，所以这类户型受到欢迎。
+2、市场房源众多，价格受地段、户型等多方面影响。买房群体同样会考虑自身经济状况与家庭结构。整个市场里对于中等规模的户型有较高的需求，表明买房群体更倾向于购买舒适实用的房子。
 
 
