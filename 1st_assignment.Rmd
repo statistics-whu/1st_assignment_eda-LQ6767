@@ -162,7 +162,7 @@ ggplot(lj, aes(x=building_area, y=price_ttl)) +
 ## 探索问题1、卧室数量与起居室数量（几室几厅）与房产平均单价之间的关系？
 
 ```{r}
-卧室数量与起居室数量（几室几厅）与房产平均单价直方图
+#卧室数量与起居室数量（几室几厅）与房产平均单价直方图
 lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
 
 # 统计每种组合的平均单价
@@ -178,7 +178,7 @@ ggplot(combination_price_sqm, aes(x = combination, y = average_price_sqm, fill =
        y = "平均单价")
 ```
 ```{r}
-卧室数量与起居室数量（几室几厅）与房产单价散点图与回归线
+#卧室数量与起居室数量（几室几厅）与房产单价散点图与回归线
 lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
 
 # 绘制散点图和回归线
@@ -195,7 +195,7 @@ ggplot(lj, aes(x=combination, y=price_sqm)) +
 
 ## 探索问题2、卧室数量与起居室数量（几室几厅）哪种组合更受关注？
 ```{r}
-几室几厅与关注度总和的关系
+#几室几厅与关注度总和的关系
 
 lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
 
@@ -212,7 +212,7 @@ ggplot(combination_followers, aes(x = combination, y = sum_followers, fill = sum
        y = "关注度总和")
 ```
 ```{r}
-几室几厅与平均关注度的关系
+#几室几厅与平均关注度的关系
 
 lj$combination <- with(lj, paste(bedrooms, livingrooms, sep = "-"))
 
